@@ -1,0 +1,1 @@
+date,host,gpu,toolkit,operation,variant,batch,n,width,height,block_threads,atol,rtol,correctness,warmup,rounds,launches_per_round,kernel_us,pipeline_us,cpu_end_to_end_us,capture_us,instantiate_us,replay_us,kernel_launches,estimated_bytes,effective_gbps,temperature_c,sm_clock_mhz,memory_clock_mhz,notes
