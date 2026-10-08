@@ -1,9 +1,10 @@
 # CUDA laboratuvarları — Ubuntu / GTX 1050 Ti
 
+[Proje özeti](../README.md) · [Doküman dizini](../docs/README.md)
+
 **Güncel çalışma programı:** [8 Ekim–1 Kasım planı](../docs/08-cuda-inference-study-plan.md).
 Kendi kernel'lerini [study/](../study/README.md) altında yaz;
 [ilerleme çizelgesini](../study/progress.md) kanıtlarla güncelle.
-
 
 Bu dizin Python veya MLX gerektirmeyen CUDA C++ öğrenme yoludur.
 Mac'teki `labs/`, `gpuk/` ve Metal örnekleri ayrı öğrenme yolu olarak korunur.

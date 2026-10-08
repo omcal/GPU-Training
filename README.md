@@ -1,171 +1,126 @@
 # GPU-Training
 
-[![CI](https://github.com/omcal/GPU-Training/actions/workflows/ci.yml/badge.svg)](https://github.com/omcal/GPU-Training/actions/workflows/ci.yml)
+[![CI](https://github.com/omcal/GPU-Training/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/omcal/GPU-Training/actions/workflows/ci.yml)
 
+A hands-on GPU programming notebook: CUDA C++ on NVIDIA hardware and Metal kernels
+through MLX on Apple Silicon. Each lab combines kernel implementations, CPU reference
+checks, and benchmarks to connect parallel algorithms with measured GPU behavior.
 
-Hands-on GPU kernel writing on Apple Silicon and NVIDIA CUDA, mapped to PMPP.
+The curriculum follows *Programming Massively Parallel Processors* (PMPP).
+The [PMPP + AI Systems Performance Engineering study plan](docs/08-cuda-inference-study-plan.md)
+continues from execution and memory models to reduction, inference kernels, and runtime
+experiments. The plan and study notes are in Turkish; the core lab commentary is in English.
 
-**8 Ekim–1 Kasım 2026 çalışma programı:**
-[PMPP + AI Systems Performance Engineering planı](docs/08-cuda-inference-study-plan.md).
-[Bağımsız egzersizler ve ilk oturum](study/README.md) · [İlerleme](study/progress.md).
-Bu takvim CUDA/SSH yolu için güncel programdır; aşağıdaki Metal rotası ayrı kaynaktır.
+**Start here:** [CUDA labs](cuda/README.md) · [Metal labs](labs/README.md)
+· [Independent exercises](study/README.md) · [Documentation index](docs/README.md)
 
+## What's implemented
 
-**Ubuntu / NVIDIA:** the CUDA route is in [`cuda/README.md`](cuda/README.md).
-The configured `ssh cuda` machine has CUDA 12.9 and a GTX 1050 Ti. Run all six
-CUDA labs and the two PMPP examples with:
+| Topic | CUDA C++ | Metal / MLX | Focus |
+|---|---|---|---|
+| Vector add | [lab01](cuda/lab01_vector_add.cu) | [lab01](labs/lab01_vector_add.py) | Launch geometry, bounds, grid-stride loops |
+| Coalescing / transpose | [lab02](cuda/lab02_coalescing.cu) | [lab02](labs/lab02_coalescing.py) | Memory access, shared-memory tiling |
+| Reduction | [lab03](cuda/lab03_reduction.cu) | [lab03](labs/lab03_reduction.py) | Block cooperation, partial sums |
+| Matrix multiplication | [lab04](cuda/lab04_matmul.cu) | [lab04](labs/lab04_matmul.py) | Data reuse, tiling, arithmetic intensity |
+| Convolution / stencil | [lab05](cuda/lab05_convolution.cu) | [lab05](labs/lab05_convolution.py) | Halo regions, boundaries |
+| Prefix sum / scan | [lab06](cuda/lab06_scan.cu) | [lab06](labs/lab06_scan.py) | Local scans, block totals, offsets |
+
+[pmpp/](pmpp/README.md) also pairs vector-add and tiled-matmul examples in CUDA and
+Metal. The two backends illustrate the same concepts; their optimization variants
+and supported input shapes differ. Each lab documents its scope.
+
+[study/](study/README.md) contains 12 independent exercise briefs, a 25-day schedule,
+and daily/weekly note templates. Histogram, merge, softmax, RMSNorm, streams, and
+CUDA Graphs are planned exercises; their solutions have not been implemented here.
+
+## Quick start
 
 ```bash
-ssh cuda 'cd ~/GPU-Training && make -C cuda test'
+git clone https://github.com/omcal/GPU-Training.git
+cd GPU-Training
 ```
 
-The rest of this README describes the **Mac / Metal route**.
+### NVIDIA / CUDA
 
-You have an M4 MacBook Air — **CUDA kernels cannot run locally on this Apple GPU.** This repo
-is the workaround, and it is a good one: Apple GPUs have a real, modern compute API
-(Metal), and you can write and run actual GPU kernels on it from Python in a second-long
-edit-run loop.
+The tested setup uses Ubuntu, CUDA Toolkit 12.9, and a GTX 1050 Ti Max-Q (`sm_61`).
+Python and MLX are unnecessary for the CUDA labs.
+
+```bash
+make -C cuda test
+# One lab, correctness checks only:
+./build/cuda/lab01_vector_add --test
+```
+
+The Makefile defaults to `/usr/local/cuda-12.9`. On a different NVIDIA setup,
+set `CUDA_HOME` to the toolkit directory and `ARCH` to the GPU target; use `make -B`
+after changing compiler settings. See the [CUDA guide](cuda/README.md) for benchmarks,
+sanitizer targets, and optional SSH synchronization.
+
+### Apple Silicon / Metal
+
+The Metal route uses Python 3.12, MLX, and the dependencies in
+[pyproject.toml](pyproject.toml). With `uv` installed:
 
 ```bash
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python -e .
-python labs/lab01_vector_add.py
+uv pip install --python .venv/bin/python -e '.[dev]'
+.venv/bin/python labs/lab01_vector_add.py
+.venv/bin/python -m pytest -q
 ```
 
----
+CUDA kernels run on NVIDIA hardware; the Apple Silicon route runs Metal kernels.
+A useful launch distinction: CUDA grid dimensions count blocks, while this MLX Metal
+harness counts dispatched threads. [The translation guide](docs/01-cuda-to-metal.md)
+explains the mapping and `gpuk.launch.cuda()` helper.
 
-## The situation, honestly
+## Learning workflow
 
-| Approach | Works on M4? |
-|---|---|
-| CUDA / `nvcc` / PTX | ❌ No CUDA runtime, no NVIDIA GPU |
-| SCALE (the CUDA-compatible compiler) | ❌ Supports NVIDIA and AMD only |
-| HIP / ROCm | ❌ AMD only |
-| **Metal Shading Language** | ✅ The real GPU compute API on this platform |
-| **MLX `mx.fast.metal_kernel`** | ✅ Write MSL from Python, JIT-compiled at runtime |
-| Triton via `triton-msl` | ⚠️ Alpha, works, needs a heavy separate install |
-| Cloud NVIDIA GPU | ✅ The only way to run PMPP's CUDA verbatim |
+1. Read the matching chapter and state the problem, decomposition, and GPU constraints.
+2. Predict the result, run the CPU reference checks, then measure the kernel.
+3. Change one parameter and compare under the same timing protocol.
+4. Rebuild a kernel from a blank file and explain the result in your own words.
 
-**You do not need Xcode.** MLX compiles Metal at runtime through the OS's
-`Metal.framework`, so writing kernels works with only the Command Line Tools installed.
-(Install full Xcode only when you want the offline `metal` compiler or the Metal
-Debugger.)
+For the 8 October–1 November 2026 CUDA program, start with the
+[study guide](study/README.md) and record evidence in the [progress tracker](study/progress.md).
+The [Metal learning route](docs/05-learning-route.md) remains available as a separate path.
 
-**You do not need to give up on PMPP.** Chapters 2-10 are about concepts — thread
-mapping, coalescing, tiling, reductions, atomics, occupancy — and those transfer to Metal
-almost one-to-one. The syntax does not. [`docs/01-cuda-to-metal.md`](docs/01-cuda-to-metal.md)
-is the translation table, and [`pmpp/`](pmpp/) has the same kernels written in both
-languages, side by side.
+## Validation and measurements
 
----
+[Validation on 8 October 2026](docs/10-validation-2026-10-08.md): **40 Metal tests passed**;
+**78 CUDA CPU-reference comparisons and two PMPP examples passed** on real hardware.
+These results describe the included reference labs; the independent study exercises
+remain to be completed.
 
-## The one thing that will bite you
-
-```cuda
-my_kernel<<<gridDim, blockDim>>>(args);   // CUDA: first arg counts BLOCKS
-```
-
-```python
-kernel(grid=(blocks * threads, 1, 1), threadgroup=(threads, 1, 1))   # Metal: THREADS
-```
-
-Metal's `dispatchThreads` takes the **total number of threads**, not a block count. Get it
-wrong and nothing errors — you just silently compute the wrong thing. Use
-`gpuk.launch.cuda(blocks, threads)`, which exists so you only have to get it right once.
-
----
-
-## Layout
-
-```
-docs/                 the reading material
-  05-learning-route.md  **START HERE** — the route, the method, the session plan
-  00-mental-model.md    SIMT, the memory hierarchy, occupancy, the roofline
-  01-cuda-to-metal.md   the full translation table — keep this open beside PMPP
-  02-your-hardware.md   what this M4 measures, and what surprised me
-  03-how-to-measure.md  how to benchmark a GPU without fooling yourself
-  04-pmpp-roadmap.md    PMPP topics -> labs, and how to get a CUDA GPU when you need one
-
-labs/                 the main event — read, run, change, re-run
-  lab01_vector_add.py   launch geometry and the memory bound
-  lab02_coalescing.py   cache-line amplification, threadgroup memory, bank conflicts
-  lab03_reduction.py    the four levels of the GPU hierarchy
-  lab04_matmul.py       tiling, register blocking, the roofline
-  lab05_convolution.py  the halo, and when tiling a stencil is not worth it
-  lab06_scan.py         prefix sum: work efficiency, and why it needs three kernels
-
-cuda/                 native CUDA C++ labs, CPU checks, and CUDA-event benchmarks
-pmpp/                 the same kernels in CUDA and Metal, with line-by-line notes
-gpuk/                 the small shared harness (device, launch, bench, check, peaks)
-bench/m4_peaks.py     re-measure this machine's ceilings
-tools/device_probe.swift   asks Metal directly for the hardware limits
-tests/                correctness tests for every kernel (python -m pytest)
-```
-
-## What the labs actually measure
-
-Measured on an M4 MacBook Air (8-core GPU, 16 GiB), MLX 0.32.2. Re-measure with
-`python bench/m4_peaks.py`; laptop numbers move.
-
-```
-streaming 1R:1W ceiling         ~92-97 GB/s     (M4 is rated ~120 GB/s nominal)
-streaming 2R:1W ceiling         ~94 GB/s
-FP32 GEMM ceiling               ~2400 GFLOP/s   (uses simdgroup_matrix)
-roofline crossover              ~26 FLOP/byte
-```
-
-| Lab | Result |
-|---|---|
-| 01 vector add | hand-written kernel matches Apple's `mx.add` — it is memory bound and there is nothing left to win |
-| 02 transpose | tiled is 1.1-1.5x faster than naive; a **64x65 tile is 5.9x slower** than 32x33 purely from occupancy |
-| 03 reduction | 16.7M-atomic version beats the textbook tree; simdgroup-hierarchical wins at 74 GB/s |
-| 04 matmul | 248 → 410 → 809 GFLOP/s across three versions, vs 1803 for Apple's tuned GEMM |
-| 05 convolution | a 3x3 stencil costs **the same as a plain copy** (so tiling it is wasted code); tiling only pays from K≥2, and then by a consistent ~1.6x |
-| 06 scan | three-kernel hierarchical scan is **1.6x faster than `mx.cumsum`** at 1M elements |
-
-Several of those results **contradict the CUDA literature** — contended atomics are cheap
-here, tiled transpose wins by little, `float4` did not reliably help, staging the
-convolution filter in on-chip memory (unanimous PMPP advice) measured *slower*, and a 3x3
-stencil is not bandwidth bound at all. That is not a bug in the labs. It is the first real
-lesson of GPU work, and [`docs/02-your-hardware.md`](docs/02-your-hardware.md) goes through
-each one: Apple's memory system is not NVIDIA's, and ported conclusions are how people
-waste weeks. Measure your own hardware.
-
-## Suggested path
-
-**Follow [`docs/05-learning-route.md`](docs/05-learning-route.md)** — it has the
-session-by-session plan and the method. The shape of it:
-
-1. Read [`docs/00-mental-model.md`](docs/00-mental-model.md) once, and keep
-   [`docs/01-cuda-to-metal.md`](docs/01-cuda-to-metal.md) open beside PMPP.
-2. Per topic: **skim the PMPP chapter → do the matching lab → re-read the chapter.** Never
-   read the book cover to cover first: its code is CUDA you cannot run here, so the
-   vocabulary has nothing to attach to.
-3. Work through `labs/lab01` → `lab06`, in order.
-4. Write one of the "not written yet" kernels from [`labs/README.md`](labs/README.md) from a
-   blank file.
-5. `softmax` → `FlashAttention` last — it uses every idea from labs 02-06 at once.
-6. Rent a GPU for a few hours when you want the NVIDIA-specific material. See
-   [`docs/04-pmpp-roadmap.md`](docs/04-pmpp-roadmap.md).
+Benchmark numbers are hardware- and workload-specific observations.
+[Metal measurements](docs/02-your-hardware.md), [CUDA measurements](docs/07-cuda-validation.md),
+and the [measurement guide](docs/03-how-to-measure.md) explain their context and limits.
+Check correctness before recording timings; GPU kernel latency and end-to-end latency
+are different metrics. Re-measure after changing hardware or experimental conditions.
 
 ## CI and releases
 
-Pushes and pull requests run portable repository checks and compile all CUDA labs
-and PMPP examples with CUDA 12.9 targeting `sm_61`. Compiled Linux programs are
-available as workflow artifacts. GPU correctness runs separately on real hardware;
-a green compile check does not mean a kernel has executed.
+Pushes and pull requests validate Python syntax, local documentation links, benchmark
+CSV structure, shell syntax, and workflow configuration. They also compile all CUDA labs
+and PMPP examples with CUDA 12.9 for `sm_61`, uploading the compiled programs as artifacts.
+GPU execution tests run separately on real hardware.
 
-Tags such as `v0.1.0` run the same checks and publish source `.tar.gz` / `.zip`
-archives with SHA-256 checksums to GitHub Releases. Setup and local validation:
+Version tags such as `v0.1.0` run the same checks, then publish source `.tar.gz` / `.zip`
+archives and SHA-256 checksums to GitHub Releases. Details:
 [CI and release guide](docs/09-ci-and-releases.md).
 
-## Environment
+## Repository layout
 
-```
-Python 3.12 · MLX 0.32.2 · numpy · matplotlib · pytest
-macOS 26.6.2 · Metal 4 · Apple GPU family apple9
+```text
+cuda/      CUDA C++ labs, Makefile, and shared helpers
+labs/      Metal / MLX labs
+gpuk/      Metal device, launch, timing, and correctness helpers
+pmpp/      Paired CUDA and Metal reference examples
+study/     Independent exercises, progress, notes, and benchmark CSV
+docs/      Concepts, learning routes, hardware records, and validation
+bench/     Metal peak-performance probes
+tests/     Metal correctness suite
+tools/     Repository checks, device probe, and optional SSH synchronization
+.github/   CI, source-release workflow, and dependency updates
 ```
 
-`gpuk/` is installed editable, so `import gpuk` works from anywhere in the repo. Run
-`python -m gpuk` for a full GPU report and
-`swift -module-cache-path .swiftcache tools/device_probe.swift` for the raw Metal limits.
+[Contributing](CONTRIBUTING.md) explains how to validate changes and report measurements.

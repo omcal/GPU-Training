@@ -1,5 +1,7 @@
 # CUDA bağımsız çalışma alanı
 
+[Proje özeti](../README.md) · [Doküman dizini](../docs/README.md)
+
 8 Ekim–1 Kasım 2026 programı: [tam plan](../docs/08-cuda-inference-study-plan.md).
 [İlerleme çizelgesi](progress.md) öğrenme durumunu izler; derleme/test başarısı bir
 chapter'ın öğrenildiği anlamına gelmez. Tüm oturumlar başlangıçta bekliyor.
@@ -16,13 +18,13 @@ chapter'ın öğrenildiği anlamına gelmez. Tüm oturumlar başlangıçta bekli
 
 | Kendi egzersizin | Mevcut referans (ilk denemeden sonra aç) | Fark / hedef |
 |---|---|---|
-| [Indexing](01_indexing/README.md) | `cuda/lab01_vector_add.cu` | Bağımsız 2D matrix kernel |
-| [Transpose](02_memory/transpose/README.md) | `cuda/lab02_coalescing.cu` | Naive → tiled; erişimleri çiz |
-| [Convolution](03_convolution/README.md) | `cuda/lab05_convolution.cu` | Bu ödev 1D convolution; referans 2D cross-correlation |
-| [Stencil](04_stencil/README.md) | `cuda/lab05_convolution.cu` | Bağımsız halo/sınır tasarımı |
+| [Indexing](01_indexing/README.md) | [lab01_vector_add.cu](../cuda/lab01_vector_add.cu) | Bağımsız 2D matrix kernel |
+| [Transpose](02_memory/transpose/README.md) | [lab02_coalescing.cu](../cuda/lab02_coalescing.cu) | Naive → tiled; erişimleri çiz |
+| [Convolution](03_convolution/README.md) | [lab05_convolution.cu](../cuda/lab05_convolution.cu) | Bu ödev 1D convolution; referans 2D cross-correlation |
+| [Stencil](04_stencil/README.md) | [lab05_convolution.cu](../cuda/lab05_convolution.cu) | Bağımsız halo/sınır tasarımı |
 | [Histogram](05_histogram/README.md) | Henüz yok | Atomics → privatization |
-| [Reduction](06_reduction/README.md) | `cuda/lab03_reduction.cu` | Kitapsız yeniden yaz |
-| [Scan](07_scan/README.md) | `cuda/lab06_scan.cu` | Ödev inclusive; mevcut lab exclusive |
+| [Reduction](06_reduction/README.md) | [lab03_reduction.cu](../cuda/lab03_reduction.cu) | Kitapsız yeniden yaz |
+| [Scan](07_scan/README.md) | [lab06_scan.cu](../cuda/lab06_scan.cu) | Ödev inclusive; mevcut lab exclusive |
 | [Merge](08_merge/README.md) | Henüz yok | Paralel partitioning |
 | [Softmax](09_inference/softmax/README.md) | Henüz yok | CPU → ayrı kernel → block reduction → fusion |
 | [RMSNorm](09_inference/rmsnorm/README.md) | Henüz yok | Sum-of-squares → normalize → fusion |

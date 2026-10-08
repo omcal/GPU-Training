@@ -1,16 +1,18 @@
-# labs/ — do them in order
+# Metal / MLX labs
+
+[Project overview](../README.md) · [Documentation](../docs/README.md) · [CUDA labs](../cuda/README.md)
 
 Each lab is a standalone script: read it, run it, then change a number and run it again.
 They are written to be read top to bottom — the kernel source *is* the lesson, and the
 commentary around it explains what the numbers mean.
 
 ```bash
-python labs/lab01_vector_add.py
-python labs/lab02_coalescing.py
-python labs/lab03_reduction.py
-python labs/lab04_matmul.py
-python labs/lab05_convolution.py
-python labs/lab06_scan.py
+.venv/bin/python labs/lab01_vector_add.py
+.venv/bin/python labs/lab02_coalescing.py
+.venv/bin/python labs/lab03_reduction.py
+.venv/bin/python labs/lab04_matmul.py
+.venv/bin/python labs/lab05_convolution.py
+.venv/bin/python labs/lab06_scan.py
 ```
 
 | Lab | Kernel | Teaches | Measured on this M4 |
